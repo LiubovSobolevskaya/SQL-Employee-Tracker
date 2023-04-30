@@ -8,6 +8,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 const currentDepartmenets = [];
 const currentRoles = [];
+require('dotenv').config();
 
 //console.log(process.env.MySQL_password);
 
@@ -15,7 +16,7 @@ const db = mysql.createConnection(
     {
       host: 'localhost',
       user: 'root',
-      password: "Kakashka_89!",
+      password: process.env.MySQL_password,
       database: 'corporation_db'
     },
     console.log('Connected to the corporation_db database.')
