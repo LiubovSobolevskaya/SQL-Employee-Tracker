@@ -1,11 +1,6 @@
-const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const Table = require('cli-table');
-const PORT = process.env.PORT || 3001;
-const app = express();
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
 const currentDepartmenets = [];
 const currentRoles = [];
 require('dotenv').config();
@@ -29,7 +24,7 @@ const db = mysql.createConnection(
     inquirer
       .prompt(
         {
-            message:  "Please select one of the following",
+            message:  "Select one of the following:",
             type: "list",
             name: "action",
             choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee role\n']
@@ -48,68 +43,10 @@ const db = mysql.createConnection(
                getAllEmployees() 
                break;
             case 'Add a department':
-                inquirer.prompt(
-                    {
-                        message: "Please enter the department's name",
-                        type: "input",
-                        name: "departmentsName"
-                    })
-                    .then((department) => {
-                        const sql = 'INSERT INTO departement (departement_name) VALUES (?)';
-                        const params = [department.departmentsName];
-                        db.query(sql, params, (err, result) => {
-                            if (err) {
-                              console.log(err);
-                            }
-                        });
-                    }
-                );
-                init();
+                addDepartment();
                 break;
             case 'Add a role':
-                inquirer.prompt(
-                    {
-                        message: "Please enter the role's name",
-                        type: "input",
-                        name: "rolesName"
-                    },
-                    {
-                        message: "Please enter the role's salary",
-                        type: "input",
-                        name: "rolesSalary"
-                    },
-                    {
-                        message: "Please enter the role's department",
-                        type: "list",
-                        name: "rolesDepartment",
-                        choices: getAllDepartmentsArray()
-
-                    }
-                    )
-                    .then((role) => {
-
-                        var query = 'SELECT id FROM department WHERE department_name (?)';
-                        db.query(query, [role.rolesDepartment], function (error, results, fields) {
-                            if (err) {
-                              console.log(err);
-                              return;
-                            }
-                            if (results.length === 0) {
-                              console.log('Department not found.');
-                              return;
-                            }
-                            const departmentId = results[0].id;
-                            const sql = 'INSERT INTO roles (title, salary, department_id) VALUES (?)';
-                                const params = [role.rolesName, role.rolesSalary, departmentId];
-                                db.query(sql, params, (err, result) => {
-                                    if (err) {
-                                        console.log(err);
-                                    }
-                                });
-                          
-                          });          
-                    });       
-                init();
+                addRole();
                 break;
             case 'Add an employee':
                 inquirer.prompt(
@@ -208,7 +145,12 @@ function getAllDepartments(){
 }
 
 function getAllRoles(){
-    const sql = 'SELECT  roles.id AS Id, roles.title AS Title, department.department_name AS Department, roles.salary AS Salary FROM roles JOIN department ON roles.department_id = department.id ORDER BY roles.id;';
+    const sql = `SELECT roles.id AS Id, 
+                        roles.title AS Title, 
+                        department.department_name AS Department, 
+                        roles.salary AS Salary FROM roles 
+                        JOIN department ON roles.department_id = department.id 
+                        ORDER BY roles.id;`;
     db.query(sql, (err, rows) => {
         if (err) {
             console.log("No Roles are available to be shown"); 
@@ -231,37 +173,131 @@ function getAllRoles(){
     });
 }
 function getAllEmployees(){
-    const sql = 'SELECT * FROM employee';
+    const sql = `SELECT e1.id AS Id, 
+                        e1.first_name AS Firstname, 
+                        e1.last_name AS Lastname, 
+                        roles.title as Title,  
+                        department.department_name AS Department, 
+                        roles.salary AS Salary, 
+                        CONCAT(e2.first_name, ' ', e2.last_name) AS Manager
+                        FROM employee AS e1 
+                        LEFT JOIN employee AS e2 ON e1.manager_id = e2.id
+                        JOIN roles ON roles.id = e1.role_id 
+                        JOIN department ON roles.department_id = department.id 
+                        GROUP BY e1.id, e1.first_name, e2.last_name
+                        ORDER BY e1.id;`;
+
     db.query(sql, (err, rows) => {
         if (err) {
             console.log("No Employee are available to be shown"); 
             return "";
         }
-        console.table(rows, ['id', 'first_name', 'last_name', 'role_id', 'manager_id']);
+        console.log(rows);
+        const table = new Table({
+            //head: ['Id', 'Firstname', 'Lastname', 'Title', 'Department', 'Salary', 'Manager']
+        });
+
+        // Add each row of data to the table
+        rows.forEach(row => {
+            if (row.Manager === null){
+                row.Manager = "NULL";
+            }
+             table.push(Object.values(row));
+        });
+
+        // Output the table to the console
+        console.log(table.toString());
         init();
+      
     });
 }
 
 function getAllDepartmentsArray(){
+ 
+
+}
+
+function addDepartment(){
+    inquirer.prompt(
+        {
+            message: "Please enter the department's name",
+            type: "input",
+            name: "departmentsName"
+        })
+        .then((department) => {
+            const sql = 'INSERT INTO department (department_name) VALUES (?)';
+            const params = [department.departmentsName];
+            db.query(sql, params, (err, result) => {
+                if (err) {
+                  console.log(err);
+                }
+            });
+            init();    
+        }
+    );
+
+}
+
+function addRole(){
     const sql = 'SELECT * FROM department';
     db.query(sql, (err, rows) => {
         if (err) {
             console.log("No Departments are available to be shown"); 
             return "";
         }
-        const returnArray = [];
-        array.forEach(element => {
-            returnArray.push(element.department_name)
+        const departmentArray = [];
+        rows.forEach(element => {
+            departmentArray.push(element.department_name)
         });
 
-    });
+        inquirer.prompt(
+            [
+                {
+                    message: "Please enter the role's name",
+                    type: "input",
+                    name: "rolesName"
+                },
+                {
+                    message: "Please enter the role's salary",
+                    type: "input",
+                    name: "rolesSalary"
+                },
+                {
+                    message: "Please enter the role's department",
+                    type: "list",
+                    name: "rolesDepartment",
+                    choices: departmentArray
+
+                }
+            ]
+            )
+            .then((role) => {
+                var query = 'SELECT id FROM department WHERE department_name =?';
+                db.query(query, [role.rolesDepartment], function (err, results, fields) {
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    if (results.length === 0) {
+                        console.log('Department not found.');
+                        return;
+                    }
+                    console.log(results);
+                    const departmentId = results[0].id;
+    
+                    const sql = `INSERT INTO roles (title, salary, department_id) 
+                                 VALUES (?);`;
+                    const params = [role.rolesName, role.rolesSalary, departmentId];
+                    db.query(sql, [params], (err, result) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+                
+                }); 
+                init();         
+            });  
+    });     
 
 }
 
-
-
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-  
