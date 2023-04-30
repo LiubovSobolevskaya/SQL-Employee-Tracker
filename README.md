@@ -22,6 +22,10 @@ ______________
 
 ## Requirements
 
+Create .env file and add your MySql password:
+```
+MySQL_password = <YOUR MYSQL PASSWORD HERE>
+```
 Run
 ```
 npm install
