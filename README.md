@@ -22,6 +22,8 @@ ______________
 
 ## Requirements
 
+Using comand line or a tool of your choice run MySQL commands from ```db/schema.sql ``` and ```db/seeds.sql ```.
+
 Create .env file and add your MySql password:
 ```
 MySQL_password = <YOUR MYSQL PASSWORD HERE>

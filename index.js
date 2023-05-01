@@ -27,7 +27,7 @@ function init() {
                 message: "Select one of the following:",
                 type: "list",
                 name: "action",
-                choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee role\n']
+                choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee role']
             }
         )
         .then((data) => {
@@ -52,7 +52,7 @@ function init() {
                     addEmployee();
                     break;
                 case 'Update an employee role':
-                    updateEmployee()
+                    updateEmployee();
                     break;
             }
 
@@ -68,7 +68,7 @@ function getAllDepartments() {
     db.query(sql, (err, rows) => {
         if (err) {
             console.log("No Departments are available to be shown");
-            return "";
+            return;
         }
 
         const table = new Table({
@@ -97,7 +97,7 @@ function getAllRoles() {
     db.query(sql, (err, rows) => {
         if (err) {
             console.log("No Roles are available to be shown");
-            return "";
+            return;
         }
         //console.log(rows); //['Id', 'Title', 'Department', 'Salary']);
         // Create a new table with column headers
@@ -133,9 +133,8 @@ function getAllEmployees() {
     db.query(sql, (err, rows) => {
         if (err) {
             console.log("No Employee are available to be shown");
-            return "";
+            return;
         }
-        console.log(rows);
         const table = new Table({
             //head: ['Id', 'Firstname', 'Lastname', 'Title', 'Department', 'Salary', 'Manager']
         });
@@ -155,10 +154,6 @@ function getAllEmployees() {
     });
 }
 
-function getAllDepartmentsArray() {
-
-
-}
 
 function addDepartment() {
     inquirer.prompt(
@@ -186,7 +181,7 @@ function addRole() {
     db.query(sql, (err, rows) => {
         if (err) {
             console.log("No Departments are available to be shown");
-            return "";
+            return;
         }
         const departmentArray = [];
         rows.forEach(element => {
@@ -248,7 +243,7 @@ function addEmployee() {
     db.query(sql, (err, rows) => {
         if (err) {
             console.log("No roles are available to be shown");
-            return "";
+            return;
         }
         const rolesId = [];
         const rolesArray = [];
@@ -260,7 +255,7 @@ function addEmployee() {
         db.query(sql, (err, rows) => {
             if (err) {
                 console.log("No employee are available to be shown");
-                return "";
+                return;
             }
             const employeeArray = ["None"];
             const idArray = [-1];
@@ -298,9 +293,9 @@ function addEmployee() {
             )
             .then((employee) => {
                 const roleIdx = rolesArray.indexOf(employee.role);
-                const roleId = rolesId.indexOf(roleIdx);
+                const roleId = rolesId[roleIdx];
                 const managerIdx = employeeArray.indexOf(employee.manager);
-                let managerId = idArray.indexOf(managerIdx);
+                let managerId = idArray[managerIdx];
         
                 if(managerId === -1){
                     managerId = null;
@@ -323,57 +318,62 @@ function addEmployee() {
 
 
 function updateEmployee() {
+
     const sql = 'SELECT * FROM employee';
     db.query(sql, (err, rows) => {
         if (err) {
             console.log("No employee are available to be shown");
-            return "";
+            return;
         }
+
         const employeeArray = [];
         const idArray = [];
         rows.forEach(element => {
             employeeArray.push(element.first_name + " " + element.last_name);
             idArray.push(element.id);
         });
-        const sql = 'SELECT * FROM roles';
-        db.query(sql, (err, rows) => {
-            if (err) {
+        db.query('SELECT * FROM roles', (error, role) => {
+
+            if (error) {
                 console.log("No roles are available to be shown");
-                return "";
+                return;
             }
+
             const rolesId = [];
             const rolesArray = [];
-            rows.forEach(element => {
+            role.forEach(element => {
                 rolesArray.push(element.title);
                 rolesId.push(element.id);
             });
             inquirer.prompt(
-                {
+                [{
                     message: "Please select an employee from the list",
-                    type: "input",
+                    type: "list",
                     name: "employeeToUpdate",
                     choices: employeeArray
-
                 },
                 {
                     message: "Please enter the new role",
                     type: "list",
                     name: "updatedRole",
                     choices: rolesArray
-                }
+                }]
             )
             .then((employee) => {
+
                 const employeeIdx = employeeArray.indexOf(employee.employeeToUpdate);
-                const epmloyeeId = idArray.indexOf(epmloyeeIdx);
+                const employeeId = idArray[employeeIdx];
                 const roleIdx = rolesArray.indexOf(employee.updatedRole);
-                const roleId = rolesId.indexOf(roleIdx);
-                const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
-                const params = [roleId, epmloyeeId];
-              
-                db.query(sql, params, (err, result) => {
+                const roleId = rolesId[roleIdx];
+                const params = [roleId, employeeId];
+
+                db.query(`UPDATE employee SET role_id = ? WHERE id = ?`, params, (err, result) => {
+                  console.log("I am here!\n");   
+                  console.log(result);
                   if (err) {
                     console.log("Could not update the employee's role");
                   } 
+                 
                 });
                 init();
             });
