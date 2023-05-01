@@ -9,125 +9,68 @@ require('dotenv').config();
 
 const db = mysql.createConnection(
     {
-      host: 'localhost',
-      user: 'root',
-      password: process.env.MySQL_password,
-      database: 'corporation_db'
+        host: 'localhost',
+        user: 'root',
+        password: process.env.MySQL_password,
+        database: 'corporation_db'
     },
     console.log('Connected to the corporation_db database.')
-  );
+);
 
 
-  // Function to initialize the program
-  function init() {
+// Function to initialize the program
+function init() {
     // Prompt the user for input using the inquirer module
     inquirer
-      .prompt(
-        {
-            message:  "Select one of the following:",
-            type: "list",
-            name: "action",
-            choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee role\n']
-        }
-      )
-      .then((data) => {
-        switch(data.action) {
-            case 'View all departments':
-              getAllDepartments();        
-              break;
-            case 'View all roles':
-              getAllRoles();   
-              break;
-    
-            case 'View all employees':
-               getAllEmployees() 
-               break;
-            case 'Add a department':
-                addDepartment();
-                break;
-            case 'Add a role':
-                addRole();
-                break;
-            case 'Add an employee':
-                inquirer.prompt(
-                    {
-                        message: "Please enter the employee's First Name",
-                        type: "input",
-                        name: "employeesFirstName"
-                    },
-                    {
-                        message: "Please enter the employee's Last Name",
-                        type: "input",
-                        name: "employeesLastName"
-                    },
-                    {
-                        message: "Please enter the emplyee's role",
-                        type: "list",
-                        name: "employeesRole",
-                        choices: [/*to do*/]
-                    },
-                    {
-                        message: "Please enter employee's manager",
-                        type: "input",
-                        name: "employeesManager",
-                        choices: [/*to do*/]
+        .prompt(
+            {
+                message: "Select one of the following:",
+                type: "list",
+                name: "action",
+                choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee role\n']
+            }
+        )
+        .then((data) => {
+            switch (data.action) {
+                case 'View all departments':
+                    getAllDepartments();
+                    break;
+                case 'View all roles':
+                    getAllRoles();
+                    break;
 
-                    }
-                    )
-                    .then((employee) => {
+                case 'View all employees':
+                    getAllEmployees()
+                    break;
+                case 'Add a department':
+                    addDepartment();
+                    break;
+                case 'Add a role':
+                    addRole();
+                    break;
+                case 'Add an employee':
+                    addEmployee();
+                    break;
+                case 'Update an employee role':
+                    updateEmployee()
+                    break;
+            }
 
-                
-                    })
-                init();
-                break;
-            case 'Update an employee role':
-                inquirer.prompt(
-                    {
-                        message: "Please select an employee from the list",
-                        type: "input",
-                        name: "updatedEmployee",
-                        choices: [/*to do*/]
+        })
 
-                    },
-                    {
-                        message: "Please enter the new role",
-                        type: "list",
-                        name: "updatedRole",
-                        choices: [/*to do*/]
-                    },
-                    {
-                        message: "Please enter the emplyee's role",
-                        type: "list",
-                        name: "employeesRole",
-                        choices: [/*to do*/]
-                    },
-              
-                    )
-                    .then((employee) => {
-
-                
-                    })
-                init();
-                break;
-            default:
-            // code block
-          }
-        
-      })
-     
 }
-  
+
 // Call the init function to start the program
 init();
 
-function getAllDepartments(){
+function getAllDepartments() {
     const sql = 'SELECT * FROM department';
     db.query(sql, (err, rows) => {
         if (err) {
-            console.log("No Departments are available to be shown"); 
+            console.log("No Departments are available to be shown");
             return "";
         }
-    
+
         const table = new Table({
             head: ['Id', 'Department']
         });
@@ -144,7 +87,7 @@ function getAllDepartments(){
     });
 }
 
-function getAllRoles(){
+function getAllRoles() {
     const sql = `SELECT roles.id AS Id, 
                         roles.title AS Title, 
                         department.department_name AS Department, 
@@ -153,7 +96,7 @@ function getAllRoles(){
                         ORDER BY roles.id;`;
     db.query(sql, (err, rows) => {
         if (err) {
-            console.log("No Roles are available to be shown"); 
+            console.log("No Roles are available to be shown");
             return "";
         }
         //console.log(rows); //['Id', 'Title', 'Department', 'Salary']);
@@ -172,7 +115,7 @@ function getAllRoles(){
         init();
     });
 }
-function getAllEmployees(){
+function getAllEmployees() {
     const sql = `SELECT e1.id AS Id, 
                         e1.first_name AS Firstname, 
                         e1.last_name AS Lastname, 
@@ -189,7 +132,7 @@ function getAllEmployees(){
 
     db.query(sql, (err, rows) => {
         if (err) {
-            console.log("No Employee are available to be shown"); 
+            console.log("No Employee are available to be shown");
             return "";
         }
         console.log(rows);
@@ -199,25 +142,25 @@ function getAllEmployees(){
 
         // Add each row of data to the table
         rows.forEach(row => {
-            if (row.Manager === null){
+            if (row.Manager === null) {
                 row.Manager = "NULL";
             }
-             table.push(Object.values(row));
+            table.push(Object.values(row));
         });
 
         // Output the table to the console
         console.log(table.toString());
         init();
-      
+
     });
 }
 
-function getAllDepartmentsArray(){
- 
+function getAllDepartmentsArray() {
+
 
 }
 
-function addDepartment(){
+function addDepartment() {
     inquirer.prompt(
         {
             message: "Please enter the department's name",
@@ -229,20 +172,20 @@ function addDepartment(){
             const params = [department.departmentsName];
             db.query(sql, params, (err, result) => {
                 if (err) {
-                  console.log(err);
+                    console.log(err);
                 }
             });
-            init();    
+            init();
         }
-    );
+        );
 
 }
 
-function addRole(){
+function addRole() {
     const sql = 'SELECT * FROM department';
     db.query(sql, (err, rows) => {
         if (err) {
-            console.log("No Departments are available to be shown"); 
+            console.log("No Departments are available to be shown");
             return "";
         }
         const departmentArray = [];
@@ -270,7 +213,7 @@ function addRole(){
 
                 }
             ]
-            )
+        )
             .then((role) => {
                 var query = 'SELECT id FROM department WHERE department_name =?';
                 db.query(query, [role.rolesDepartment], function (err, results, fields) {
@@ -284,7 +227,7 @@ function addRole(){
                     }
                     console.log(results);
                     const departmentId = results[0].id;
-    
+
                     const sql = `INSERT INTO roles (title, salary, department_id) 
                                  VALUES (?);`;
                     const params = [role.rolesName, role.rolesSalary, departmentId];
@@ -293,11 +236,147 @@ function addRole(){
                             console.log(err);
                         }
                     });
-                
-                }); 
-                init();         
-            });  
-    });     
+
+                });
+                init();
+            });
+    });
+
+}
+function addEmployee() {
+    const sql = 'SELECT * FROM roles';
+    db.query(sql, (err, rows) => {
+        if (err) {
+            console.log("No roles are available to be shown");
+            return "";
+        }
+        const rolesId = [];
+        const rolesArray = [];
+        rows.forEach(element => {
+            rolesArray.push(element.title);
+            rolesId.push(element.id);
+        });
+        const sql = 'SELECT * FROM employee';
+        db.query(sql, (err, rows) => {
+            if (err) {
+                console.log("No employee are available to be shown");
+                return "";
+            }
+            const employeeArray = ["None"];
+            const idArray = [-1];
+            rows.forEach(element => {
+                employeeArray.push(element.first_name + " " + element.last_name);
+                idArray.push(element.id);
+            });
+            inquirer.prompt(
+                [
+                    {
+                        message: "Please enter emplyee's first name",
+                        type: "input",
+                        name: "firstName"
+                    },
+                    {
+                        message: "Please enter emplyee's last name",
+                        type: "input",
+                        name: "lastName"
+                    },
+                    {
+                        message: "Please enter the emplyee's role",
+                        type: "list",
+                        name: "role",
+                        choices: rolesArray
+
+                    },
+                    {
+                        message: "Please enter the emplyee's manager",
+                        type: "list",
+                        name: "manager",
+                        choices: employeeArray
+
+                    }
+                ]
+            )
+            .then((employee) => {
+                const roleIdx = rolesArray.indexOf(employee.role);
+                const roleId = rolesId.indexOf(roleIdx);
+                const managerIdx = employeeArray.indexOf(employee.manager);
+                let managerId = idArray.indexOf(managerIdx);
+        
+                if(managerId === -1){
+                    managerId = null;
+                }
+                const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?);`;
+                const params = [employee.firstName, employee.lastName, roleId, managerId];
+                db.query(sql, [params], (err, result) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+                init();    
+            });
+           
+        
+        });
+    });
 
 }
 
+
+function updateEmployee() {
+    const sql = 'SELECT * FROM employee';
+    db.query(sql, (err, rows) => {
+        if (err) {
+            console.log("No employee are available to be shown");
+            return "";
+        }
+        const employeeArray = [];
+        const idArray = [];
+        rows.forEach(element => {
+            employeeArray.push(element.first_name + " " + element.last_name);
+            idArray.push(element.id);
+        });
+        const sql = 'SELECT * FROM roles';
+        db.query(sql, (err, rows) => {
+            if (err) {
+                console.log("No roles are available to be shown");
+                return "";
+            }
+            const rolesId = [];
+            const rolesArray = [];
+            rows.forEach(element => {
+                rolesArray.push(element.title);
+                rolesId.push(element.id);
+            });
+            inquirer.prompt(
+                {
+                    message: "Please select an employee from the list",
+                    type: "input",
+                    name: "employeeToUpdate",
+                    choices: employeeArray
+
+                },
+                {
+                    message: "Please enter the new role",
+                    type: "list",
+                    name: "updatedRole",
+                    choices: rolesArray
+                }
+            )
+            .then((employee) => {
+                const employeeIdx = employeeArray.indexOf(employee.employeeToUpdate);
+                const epmloyeeId = idArray.indexOf(epmloyeeIdx);
+                const roleIdx = rolesArray.indexOf(employee.updatedRole);
+                const roleId = rolesId.indexOf(roleIdx);
+                const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
+                const params = [roleId, epmloyeeId];
+              
+                db.query(sql, params, (err, result) => {
+                  if (err) {
+                    console.log("Could not update the employee's role");
+                  } 
+                });
+                init();
+            });
+        });
+    });       
+}
