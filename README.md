@@ -1,6 +1,7 @@
 # SQL Employee Tracker
 10th Assignment of UCB Extension Web Development Bootcamp
 
+Please visit [the walkthrough video](https://drive.google.com/file/d/1YiR4tzRLlcgI37hkKpsCMHMHT5ImWbDd/view?usp=sharing)
 
 ## Desciption
 This is a description of a command-line application with several features. When the application is started, the user is presented with options to view departments, roles, and employees, as well as to add new departments, roles, and employees, or update an employee's role.
@@ -12,6 +13,9 @@ If the user chooses to add a department, they will be prompted to enter the depa
 Finally, if the user chooses to update an employee's role, they will be prompted to select the employee and their new role, and the database will be updated accordingly.
 
 ______________
+
+## Appearance
+![](imgs/apperance.png)
 
 ## Technology Used 
    
