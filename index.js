@@ -1,11 +1,23 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const Table = require('cli-table');
+var figlet = require("figlet");
 const currentDepartmenets = [];
 const currentRoles = [];
 require('dotenv').config();
 
-//console.log(process.env.MySQL_password);
+
+
+figlet("Employee Tracker", { font: "ANSI Shadow"}, function (err, data) {
+  if (err) {
+    console.log("Something went wrong...");
+    console.dir(err);
+    return;
+  }
+  console.log(data);
+  init();
+});
+
 
 const db = mysql.createConnection(
     {
@@ -61,7 +73,7 @@ function init() {
 }
 
 // Call the init function to start the program
-init();
+
 
 function getAllDepartments() {
     const sql = 'SELECT * FROM department';
